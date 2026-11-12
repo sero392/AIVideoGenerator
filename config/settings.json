@@ -1,0 +1,32 @@
+{
+  "$comment": "Non-secret application settings. Secrets (OAuth credentials, tokens) belong in backend/.env, never in this file.",
+  "ai": {
+    "default_llm_provider": "ollama",
+    "providers": {
+      "ollama": {
+        "enabled": true,
+        "default_model": "qwen2.5:7b",
+        "request_timeout_seconds": 120
+      }
+    },
+    "transcription": {
+      "provider": "faster-whisper",
+      "model_size": "small",
+      "device": "auto",
+      "compute_type": "int8",
+      "language": null
+    }
+  },
+  "recording": {
+    "require_permission_confirmation": true,
+    "container_format": "mp4"
+  },
+  "clips": {
+    "min_duration_seconds": 15,
+    "max_duration_seconds": 60
+  },
+  "youtube": {
+    "default_privacy_status": "private",
+    "default_category_id": "20"
+  }
+}

@@ -1,0 +1,5 @@
+# Optional heavy dependencies for AI and video processing.
+# The backend starts without them; services report "unavailable" until installed.
+-r requirements.txt
+faster-whisper>=1.0
+opencv-python-headless>=4.10

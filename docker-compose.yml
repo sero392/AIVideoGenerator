@@ -1,0 +1,40 @@
+# Local development stack. Not yet verified on this machine (Docker is not installed);
+# the documented local setup (scripts/setup.sh) is the tested path.
+services:
+  backend:
+    build: ./backend
+    env_file:
+      - ./backend/.env
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+      CORS_ORIGINS: http://localhost:5173
+      STORAGE_ROOT: /data/storage
+      LOG_DIR: /data/logs
+      CONFIG_DIR: /data/config
+    volumes:
+      - ./storage:/data/storage
+      - ./logs:/data/logs
+      - ./config:/data/config:ro
+    ports:
+      - "8000:8000"
+    depends_on:
+      - ollama
+
+  frontend:
+    build: ./frontend
+    environment:
+      VITE_BACKEND_URL: http://backend:8000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama-models:/root/.ollama
+    ports:
+      - "11434:11434"
+
+volumes:
+  ollama-models:

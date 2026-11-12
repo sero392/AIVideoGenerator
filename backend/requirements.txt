@@ -1,0 +1,14 @@
+# Core backend runtime
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.32
+pydantic>=2.9,<3.0
+pydantic-settings>=2.6,<3.0
+sqlalchemy>=2.0.36,<2.1
+apscheduler>=3.10,<4.0
+httpx>=0.27
+
+# Testing
+pytest>=8.3
+pytest-asyncio>=0.24
+
+# Heavy, optional AI/video packages live in requirements-ai.txt

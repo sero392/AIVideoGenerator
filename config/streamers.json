@@ -1,0 +1,4 @@
+{
+  "$comment": "Seed list of streamers to track. Only add channels whose owners have granted recording/re-upload permission. 'recording_permission_confirmed' must be true before the recorder will touch a stream. Empty by default.",
+  "streamers": []
+}
