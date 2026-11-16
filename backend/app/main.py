@@ -22,6 +22,7 @@ from app.core.paths import ensure_storage_dirs
 from app.database.init_db import init_db
 from app.database.session import get_engine
 from app.scheduler.scheduler import start_scheduler, stop_scheduler
+from app.services.recorder.manager import get_recording_manager
 
 logger = logging.getLogger(__name__)
 
@@ -34,12 +35,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         ensure_storage_dirs(settings)
         init_db(get_engine())
+        get_recording_manager().recover_on_startup()
         start_scheduler(settings)
         logger.info("%s v%s started (%s).", settings.app_name, settings.app_version, settings.environment)
         try:
             yield
         finally:
             stop_scheduler()
+            await get_recording_manager().shutdown()
             logger.info("Shutdown complete.")
 
     app = FastAPI(

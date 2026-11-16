@@ -41,6 +41,20 @@ class ConflictError(AppError):
     code = "conflict"
 
 
+class DomainValidationError(AppError):
+    """Business-rule validation failure.
+
+    ``details`` uses the same shape as FastAPI's request validation errors
+    (``[{"loc": ["body", "field"], "msg": "..."}]``) so clients parse one format.
+    """
+
+    status_code = status.HTTP_422_UNPROCESSABLE_CONTENT
+    code = "validation_error"
+
+    def __init__(self, field: str, message: str) -> None:
+        super().__init__(message, details=[{"loc": ["body", field], "msg": message, "type": "value_error"}])
+
+
 class UnsafePathError(AppError):
     status_code = status.HTTP_400_BAD_REQUEST
     code = "unsafe_path"
@@ -70,7 +84,7 @@ def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(RequestValidationError)
     async def handle_validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:
         return JSONResponse(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             content=_error_body("validation_error", "Request validation failed.", exc.errors()),
         )
 

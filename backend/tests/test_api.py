@@ -3,13 +3,22 @@ from __future__ import annotations
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.models import Clip, ClipStatus, RecordingSession, RecordingStatus, StreamPlatform, Streamer
+from app.models import (
+    Clip,
+    ClipStatus,
+    RecordingSession,
+    RecordingStatus,
+    StreamPlatform,
+    StreamStatus,
+    Streamer,
+    TrackingState,
+)
 
 
 def test_health(client: TestClient) -> None:
     response = client.get("/api/v1/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "application": "Streamer AI Engine", "version": "0.1.0"}
+    assert response.json() == {"status": "ok", "application": "Streamer AI Engine", "version": "0.4.0"}
 
 
 def test_openapi_docs_available(client: TestClient) -> None:
@@ -51,7 +60,8 @@ def test_dashboard_counts_real_rows(client: TestClient, db: Session) -> None:
     db.flush()
     live = RecordingSession(streamer_id=active.id, status=RecordingStatus.RECORDING)
     done = RecordingSession(streamer_id=active.id, status=RecordingStatus.COMPLETED)
-    db.add_all([live, done])
+    # "Aktif yayın" = streams the tracker currently sees live
+    db.add_all([live, done, StreamStatus(streamer_id=active.id, state=TrackingState.LIVE)])
     db.flush()
     db.add_all(
         [

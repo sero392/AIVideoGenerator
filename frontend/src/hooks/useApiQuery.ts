@@ -7,11 +7,23 @@ interface QueryState<T> {
   refetch: () => void;
 }
 
+interface QueryOptions {
+  /** Re-fetch periodically (ms). */
+  pollMs?: number;
+  /** Re-fetch whenever any of these values change (e.g. filters). */
+  deps?: readonly unknown[];
+}
+
 /**
- * Minimal fetch hook with abort + optional polling.
+ * Minimal fetch hook with abort, polling and dependency-driven refetch.
+ * Previous data is kept while re-fetching so the UI does not flash.
  * (Swap for TanStack Query once the app has many endpoints.)
  */
-export function useApiQuery<T>(fetcher: (signal: AbortSignal) => Promise<T>, pollMs?: number): QueryState<T> {
+export function useApiQuery<T>(
+  fetcher: (signal: AbortSignal) => Promise<T>,
+  options: QueryOptions | number = {},
+): QueryState<T> {
+  const { pollMs, deps = [] } = typeof options === "number" ? { pollMs: options } : options;
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [loading, setLoading] = useState(true);
@@ -20,6 +32,7 @@ export function useApiQuery<T>(fetcher: (signal: AbortSignal) => Promise<T>, pol
   fetcherRef.current = fetcher;
 
   const refetch = useCallback(() => setTick((t) => t + 1), []);
+  const depsKey = JSON.stringify(deps);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -38,7 +51,7 @@ export function useApiQuery<T>(fetcher: (signal: AbortSignal) => Promise<T>, pol
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [tick]);
+  }, [tick, depsKey]);
 
   useEffect(() => {
     if (!pollMs) return;

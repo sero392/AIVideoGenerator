@@ -16,7 +16,7 @@ class DashboardStats(BaseModel):
 
 
 class ActivityItem(BaseModel):
-    kind: Literal["recording", "clip", "youtube"]
+    kind: Literal["recording", "clip", "youtube", "stream"]
     title: str
     status: str
     timestamp: datetime

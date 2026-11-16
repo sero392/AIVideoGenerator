@@ -1,4 +1,4 @@
-import { Activity, Film, Scissors, SquarePlay } from "lucide-react";
+import { Activity, Film, Radio, Scissors, SquarePlay } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { ActivityItem } from "@/types/api";
 import { formatDateTime } from "@/utils/format";
 
-const KIND_ICON = { recording: Film, clip: Scissors, youtube: SquarePlay } as const;
+const KIND_ICON = { recording: Film, clip: Scissors, youtube: SquarePlay, stream: Radio } as const;
 
 interface Props {
   items: ActivityItem[] | null;

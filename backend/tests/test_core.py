@@ -30,7 +30,14 @@ def test_secret_not_in_repr() -> None:
 
 @pytest.mark.parametrize(
     "text",
-    ["client_secret=abc123", 'token: "abc123"', "Authorization: Bearer abc123", "api_key=abc123&x=1"],
+    [
+        "client_secret=abc123",
+        'token: "abc123"',
+        "Authorization: Bearer abc123",
+        "api_key=abc123&x=1",
+        "GET https://www.googleapis.com/youtube/v3/videos?part=snippet&key=abc123",
+        "GET https://x.test/v1?key=abc123&id=1",
+    ],
 )
 def test_redaction(text: str) -> None:
     assert "abc123" not in redact(text)
@@ -69,9 +76,11 @@ def test_streamer_schema_validation() -> None:
     ok = StreamerCreate(name="  Foo ", platform="twitch", channel_url="https://twitch.tv/foo")
     assert ok.name == "Foo"
     with pytest.raises(ValidationError):
-        StreamerCreate(name="x", platform="twitch", channel_url="http://twitch.tv/foo")
+        StreamerCreate(name="   ", platform="twitch", channel_url="https://twitch.tv/foo")
     with pytest.raises(ValidationError):
         StreamerCreate(name="x", platform="myspace", channel_url="https://x.test")
+    with pytest.raises(ValidationError):  # unknown fields are rejected
+        StreamerCreate(name="x", platform="twitch", channel_url="https://twitch.tv/x", is_admin=True)
 
 
 async def test_ollama_provider_with_mock_transport() -> None:

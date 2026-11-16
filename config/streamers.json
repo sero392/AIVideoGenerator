@@ -1,4 +1,12 @@
 {
-  "$comment": "Seed list of streamers to track. Only add channels whose owners have granted recording/re-upload permission. 'recording_permission_confirmed' must be true before the recorder will touch a stream. Empty by default.",
-  "streamers": []
+  "$comment": "Seed list imported via 'JSON'dan içe aktar' (POST /api/v1/streamers/import). Only add channels whose owners granted recording/re-upload permission. Fields: name, platform (twitch|youtube|kick|other), channel_url (https), is_active, recording_permission_confirmed, permission_notes (required when permission is confirmed). Existing channels are skipped.",
+  "streamers": [],
+  "example": {
+    "name": "Örnek Yayıncı",
+    "platform": "twitch",
+    "channel_url": "https://twitch.tv/ornek",
+    "is_active": true,
+    "recording_permission_confirmed": true,
+    "permission_notes": "10.11.2026 tarihinde e-posta ile yazılı izin verdi."
+  }
 }

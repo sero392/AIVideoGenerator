@@ -1,14 +1,38 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
+import { toast } from "sonner";
 
 import { useEventSocket } from "@/hooks/useEventSocket";
+import { publishServerEvent } from "@/services/events";
+import type { ServerEvent } from "@/types/api";
 
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 
+function notify(event: ServerEvent) {
+  if (event.type === "stream.went_live") {
+    toast.success(`${event.name} canlı yayında`, {
+      description: event.title ?? undefined,
+      action: event.stream_url
+        ? { label: "Aç", onClick: () => window.open(event.stream_url!, "_blank", "noopener,noreferrer") }
+        : undefined,
+    });
+  } else if (event.type === "stream.went_offline") {
+    toast(`${event.name} yayını bitirdi`);
+  } else if (event.type === "recording.started") {
+    toast(`${event.name} kaydediliyor`, { description: "Canlı kayıt başladı." });
+  } else if (event.type === "recording.finished") {
+    if (event.status === "completed") toast.success("Kayıt tamamlandı", { description: "Kayıtlar sayfasından izleyebilirsiniz." });
+    else toast.error("Kayıt başarısız", { description: "Ayrıntılar Kayıtlar sayfasında." });
+  }
+}
+
 export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const socketState = useEventSocket();
+  const socketState = useEventSocket((event) => {
+    notify(event);
+    publishServerEvent(event);
+  });
 
   return (
     <div className="min-h-svh">

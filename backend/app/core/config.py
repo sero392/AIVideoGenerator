@@ -28,7 +28,7 @@ class Settings(BaseSettings):
 
     # --- Application ---
     app_name: str = "Streamer AI Engine"
-    app_version: str = "0.1.0"
+    app_version: str = "0.4.0"
     environment: Literal["development", "test", "production"] = "development"
     debug: bool = False
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
@@ -49,11 +49,35 @@ class Settings(BaseSettings):
     whisper_compute_type: str = "int8"
 
     # --- Video ---
+    # "ffmpeg" = use PATH if present, otherwise the binary bundled by imageio-ffmpeg.
     ffmpeg_binary: str = "ffmpeg"
+
+    # --- Recording ---
+    recording_max_concurrent: int = Field(default=2, ge=1, le=10)
+    recording_max_hours: float = Field(default=12, gt=0, le=48)
+    recording_min_free_gb: float = Field(default=5, ge=0)
+    recording_max_upload_gb: float = Field(default=20, gt=0)
+    # yt-dlp format sort; "res:1080" = best quality up to 1080p (smaller side, so vertical streams work too)
+    recording_format_sort: str = "res:1080"
 
     # --- Scheduler ---
     scheduler_enabled: bool = True
     scheduler_timezone: str = "Europe/Istanbul"
+
+    # --- Live stream tracking (official platform APIs) ---
+    tracking_enabled: bool = True
+    tracking_tick_seconds: int = Field(default=60, ge=15, le=3600)
+    twitch_poll_interval_seconds: int = Field(default=120, ge=30)
+    kick_poll_interval_seconds: int = Field(default=120, ge=30)
+    youtube_poll_interval_seconds: int = Field(default=300, ge=60)
+    # Twitch Helix app credentials (dev.twitch.tv/console)
+    twitch_client_id: str = ""
+    twitch_client_secret: SecretStr = Field(default=SecretStr(""))
+    # Kick public API app credentials (kick.com/settings/developer)
+    kick_client_id: str = ""
+    kick_client_secret: SecretStr = Field(default=SecretStr(""))
+    # YouTube Data API v3 key (read-only public data; separate from upload OAuth below)
+    youtube_api_key: SecretStr = Field(default=SecretStr(""))
 
     # --- YouTube OAuth (secrets) ---
     youtube_client_id: str = ""

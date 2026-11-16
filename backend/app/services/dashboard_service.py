@@ -9,7 +9,17 @@ from sqlalchemy.orm import Session
 
 from app.core.config import Settings
 from app.database.init_db import check_db_connection
-from app.models import Clip, ClipStatus, RecordingSession, RecordingStatus, Streamer, YoutubeVideo
+from app.models import (
+    Clip,
+    ClipStatus,
+    RecordingSession,
+    StreamEvent,
+    StreamEventType,
+    StreamStatus,
+    Streamer,
+    TrackingState,
+    YoutubeVideo,
+)
 from app.scheduler.scheduler import scheduler_is_running
 from app.schemas.dashboard import (
     ActivityItem,
@@ -31,8 +41,9 @@ def _count(db: Session, stmt) -> int:  # type: ignore[no-untyped-def]
 def get_stats(db: Session) -> DashboardStats:
     return DashboardStats(
         tracked_streamers=_count(db, select(func.count(Streamer.id)).where(Streamer.is_active.is_(True))),
+        # Streams currently live among tracked streamers (from the live tracker).
         active_streams=_count(
-            db, select(func.count(RecordingSession.id)).where(RecordingSession.status == RecordingStatus.RECORDING)
+            db, select(func.count(StreamStatus.streamer_id)).where(StreamStatus.state == TrackingState.LIVE)
         ),
         total_recordings=_count(db, select(func.count(RecordingSession.id))),
         prepared_clips=_count(
@@ -57,6 +68,19 @@ def get_recent_activity(db: Session, limit: int = RECENT_ACTIVITY_LIMIT) -> list
 
     clips = db.scalars(select(Clip).order_by(Clip.created_at.desc()).limit(limit)).all()
     items += [ActivityItem(kind="clip", title=c.title, status=c.status.value, timestamp=c.created_at) for c in clips]
+
+    stream_events = db.execute(
+        select(StreamEvent, Streamer.name).join(Streamer).order_by(StreamEvent.occurred_at.desc()).limit(limit)
+    ).all()
+    items += [
+        ActivityItem(
+            kind="stream",
+            title=f"{name} {'canlı yayına başladı' if e.event_type is StreamEventType.WENT_LIVE else 'yayını bitirdi'}",
+            status=e.event_type.value,
+            timestamp=e.occurred_at,
+        )
+        for e, name in stream_events
+    ]
 
     videos = db.scalars(select(YoutubeVideo).order_by(YoutubeVideo.created_at.desc()).limit(limit)).all()
     items += [ActivityItem(kind="youtube", title=v.title, status=v.status.value, timestamp=v.created_at) for v in videos]

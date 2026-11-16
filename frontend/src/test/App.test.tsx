@@ -54,7 +54,7 @@ describe("App shell", () => {
 
   it("shows a 'not yet implemented' page for future modules", () => {
     mockFetch({});
-    renderAt("/recordings");
+    renderAt("/clips");
     expect(screen.getByText(/Bu modül henüz geliştirilmedi/)).toBeInTheDocument();
   });
 });
